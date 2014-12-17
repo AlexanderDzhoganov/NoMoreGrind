@@ -59,7 +59,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GUI.cs" />
     <Compile Include="NoMoreGrind.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
