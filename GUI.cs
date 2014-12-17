@@ -12,7 +12,7 @@ namespace NoMoreGrind
         public delegate void OnValueChanged(float costFactor);
         public OnValueChanged onValueChanged = null;
 
-        private Rect windowRect = new Rect(128, 128, 256, 128);
+        private Rect windowRect = new Rect(256, 256, 320, 240);
 
         private bool isVisible = false;
 
