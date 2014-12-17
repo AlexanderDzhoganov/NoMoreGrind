@@ -11,45 +11,52 @@ using System.Reflection;
 namespace NoMoreGrind
 {
 
-    [KSPAddon(KSPAddon.Startup.SpaceCentre, true)]
+    [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
     public class NoMoreGrind : MonoBehaviour
     {
         private static float CostMultiplier = 0.1f;
 
-        private Rect windowRect = new Rect(256, 256, 320, 240);
+        private static Rect windowRect = new Rect(256, 256, 320, 120);
 
-        private bool isVisible = false;
+        private static bool isVisible = false;
+
+        private static bool patchApplied = false;
 
         public void Awake()
         {
             print("NoMoreGrind: Initialized");
+            GameEvents.onGameStateSave.Add(SaveState);
+            GameEvents.onGameStateLoad.Add(LoadState);
         }
 
         public void Start()
         {
-            List<FieldInfo> fields = new List<FieldInfo>
-            (
-                typeof(UpgradeableFacility).GetFields
-                (
-                    BindingFlags.NonPublic | BindingFlags.Instance
-                )
-            );
-
-            List<FieldInfo> upgradeLevelsFields =
-                    (new List<FieldInfo>(
-                        fields.Where<FieldInfo>(
-                            f => f.FieldType.Equals(typeof(UpgradeLevel[])))));
-
-            foreach (UpgradeableFacility facility in GameObject.FindObjectsOfType<UpgradeableFacility>())
+            if (!patchApplied)
             {
-                Debug.LogWarning(facility.name + " has upgrade-cose: " + facility.GetUpgradeCost());
+                List<FieldInfo> fields = new List<FieldInfo>
+                (
+                    typeof(UpgradeableFacility).GetFields
+                    (
+                        BindingFlags.NonPublic | BindingFlags.Instance
+                    )
+                );
 
-                UpgradeLevel[] upgradeLevels = (UpgradeLevel[])upgradeLevelsFields[0].GetValue(facility);
-                for (int i = 0; i < upgradeLevels.Length; i++)
+                List<FieldInfo> upgradeLevelsFields =
+                        (new List<FieldInfo>(
+                            fields.Where<FieldInfo>(
+                                f => f.FieldType.Equals(typeof(UpgradeLevel[])))));
+
+                foreach (UpgradeableFacility facility in GameObject.FindObjectsOfType<UpgradeableFacility>())
                 {
-                    UpgradeLevel level = upgradeLevels[i];
-                    level.levelCost *= CostMultiplier;
+                    UpgradeLevel[] upgradeLevels = (UpgradeLevel[])upgradeLevelsFields[0].GetValue(facility);
+                    for (int i = 0; i < upgradeLevels.Length; i++)
+                    {
+                        UpgradeLevel level = upgradeLevels[i];
+                        level.levelCost *= CostMultiplier;
+                    }
                 }
+
+                patchApplied = true;
             }
         }
 
@@ -82,6 +89,9 @@ namespace NoMoreGrind
 
         void OnGUI()
         {
+            var oldSkin = GUI.skin;
+            GUI.skin = HighLogic.Skin;
+
             if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKey(KeyCode.F11))
             {
                 isVisible = true;
@@ -91,6 +101,8 @@ namespace NoMoreGrind
             {
                 windowRect = GUILayout.Window(0, windowRect, DoWindow, "No More Grind");
             }
+
+            GUI.skin = oldSkin;
         }
 
         public void OnDestroy()
@@ -114,7 +126,7 @@ namespace NoMoreGrind
             GUILayout.Label("Cost factor");
             GUILayout.FlexibleSpace();
 
-            CostMultiplier = GUILayout.HorizontalSlider(CostMultiplier, 0.05f, 2.0f);
+            CostMultiplier = GUILayout.HorizontalSlider(CostMultiplier, 0.05f, 2.0f, GUILayout.Width(256));
 
             GUILayout.Label(CostMultiplier.ToString("0.00"));
             GUILayout.EndHorizontal();
