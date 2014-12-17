@@ -64,8 +64,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /Y NoMoreGrind.dll ..\..\builds\x64\GameData\NoMoreGrind\
-xcopy /Y NoMoreGrind.dll ..\..\builds\alpha\x64\
+    <PostBuildEvent>xcopy /Y NoMoreGrind.dll ..\..\build\GameData\NoMoreGrind\
 rmdir /S /q ..\..\obj\
 xcopy /Y NoMoreGrind.dll "$(KSP_PATH)\GameData\NoMoreGrind\"</PostBuildEvent>
   </PropertyGroup>
