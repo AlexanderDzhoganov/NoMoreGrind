@@ -41,7 +41,24 @@ namespace NoMoreGrind
                 level.levelCost *= 0.1f;
             }
         }
-         
+
+        public void LoadState(ConfigNode configNode)
+        {
+            gui.LoadConfig(configNode);
+        }
+
+        public void SaveState(ConfigNode configNode)
+        {
+            gui.SaveConfig(configNode);    
+        }
+
+        void OnGUI()
+        {
+            gui.OnGUI();
+        }
+
+        private GUI gui = new GUI();
+
         public void OnDestroy()
         {
             print("NoMoreGrind: Deinitialized");
