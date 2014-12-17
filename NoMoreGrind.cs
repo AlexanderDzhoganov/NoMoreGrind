@@ -4,7 +4,7 @@ using System.IO;
 using UnityEngine;
 using Upgradeables;
 
-namespace KSPAdvancedFlyByWire
+namespace NoMoreGrind
 {
 
     [KSPAddon(KSPAddon.Startup.SpaceCentre, true)]
