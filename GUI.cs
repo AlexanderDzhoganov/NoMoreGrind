@@ -9,6 +9,9 @@ namespace NoMoreGrind
     class GUI
     {
 
+        public delegate void OnValueChanged(float costFactor);
+        public OnValueChanged onValueChanged = null;
+
         private Rect windowRect = new Rect(128, 128, 256, 128);
 
         private bool isVisible = false;
@@ -32,7 +35,14 @@ namespace NoMoreGrind
             GUILayout.Label("Cost factor");
             GUILayout.FlexibleSpace();
 
+            float oldCostFactor = costFactor;
             costFactor = GUILayout.HorizontalSlider(costFactor, 0.05f, 2.0f);
+
+            if (costFactor != oldCostFactor && onValueChanged != null)
+            {
+                onValueChanged(costFactor);
+            }
+
             GUILayout.Label(costFactor.ToString("0.00"));
             GUILayout.EndHorizontal();
         }
@@ -61,7 +71,7 @@ namespace NoMoreGrind
 
         public void OnGUI()
         {
-            if (Input.GetKeyDown(KeyCode.LeftAlt) && Input.GetKey(KeyCode.G))
+            if (Input.GetKeyDown(KeyCode.LeftAlt) && Input.GetKey(KeyCode.F11))
             {
                 isVisible = true;
             }
