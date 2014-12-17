@@ -39,12 +39,19 @@ namespace NoMoreGrind
 
         public void SaveConfig(ConfigNode node)
         {
-            node.AddValue("CostFactor", costFactor);
+            node.AddValue("CostFactor", costFactor.ToString());
         }
 
         public void LoadConfig(ConfigNode node)
         {
-            costFactor = (float)node.GetValue("CostFactor")
+            try
+            {
+                costFactor = float.Parse(node.GetValue("CostFactor"));
+            }
+            catch (Exception)
+            {
+                costFactor = 0.1f;
+            }
         }
 
         public float GetCostFactor()
@@ -61,7 +68,7 @@ namespace NoMoreGrind
 
             if (isVisible)
             {
-                windowRect = GUILayout.Window(windowRect, DoWindow, "No More Grind");
+                windowRect = GUILayout.Window(0, windowRect, DoWindow, "No More Grind");
             }
         }
 
