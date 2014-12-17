@@ -7,8 +7,8 @@
     <ProjectGuid>{32E769CC-F89C-4AE9-B030-4ABF1EFC1D97}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>KSPAdvancedFlyByWire</RootNamespace>
-    <AssemblyName>ksp-advanced-flybywire</AssemblyName>
+    <RootNamespace>NoMoreGrind</RootNamespace>
+    <AssemblyName>NoMoreGrind</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
