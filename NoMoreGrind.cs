@@ -97,6 +97,11 @@ namespace NoMoreGrind
                 isVisible = true;
             }
 
+            if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKey(KeyCode.O))
+            {
+                isVisible = true;
+            }
+
             if (isVisible)
             {
                 windowRect = GUILayout.Window(0, windowRect, DoWindow, "No More Grind");
