@@ -10,29 +10,47 @@ using System.Reflection;
 
 namespace NoMoreGrind
 {
+    public enum Facility
+    {
+        VehicleAssemblyBuilding,
+        TrackingStation,
+        SpaceplaneHangar,
+        Runway,
+        ResearchAndDevelopment,
+        MissionControl,
+        LaunchPad,
+        AstronautComplex,
+        Administration
+    }
 
     [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
     public class NoMoreGrind : MonoBehaviour
     {
-        private static float CostMultiplier = 0.1f;
-
-        private static Rect windowRect = new Rect(256, 256, 320, 120);
-
-        private static bool isVisible = false;
-
         private static bool patchApplied = false;
 
         public void Awake()
         {
             print("NoMoreGrind: Initialized");
-            GameEvents.onGameStateSave.Add(SaveState);
-            GameEvents.onGameStateLoad.Add(LoadState);
         }
+        
+        private static readonly string ConfigPath = Path.Combine(Path.Combine(Path.Combine(KSPUtil.ApplicationRootPath, "GameData"), "NoMoreGrind"), "config.txt");
 
         public void Start()
         {
             if (!patchApplied)
             {
+                Dictionary<Facility, float> priceMultipliers = new Dictionary<Facility, float>();
+
+                try
+                {
+                    priceMultipliers = ReadConfig(ConfigPath);
+                }
+                catch (Exception)
+                {
+                    print("NoMoreGrind: Malformed config.txt");
+                    throw;
+                }
+
                 List<FieldInfo> fields = new List<FieldInfo>
                 (
                     typeof(UpgradeableFacility).GetFields
@@ -45,14 +63,18 @@ namespace NoMoreGrind
                         (new List<FieldInfo>(
                             fields.Where<FieldInfo>(
                                 f => f.FieldType.Equals(typeof(UpgradeLevel[])))));
-
+                
                 foreach (UpgradeableFacility facility in GameObject.FindObjectsOfType<UpgradeableFacility>())
                 {
-                    UpgradeLevel[] upgradeLevels = (UpgradeLevel[])upgradeLevelsFields[0].GetValue(facility);
-                    for (int i = 0; i < upgradeLevels.Length; i++)
+                    Facility facilityType = (Facility)Enum.Parse(typeof(Facility), facility.name);
+                    if (priceMultipliers.ContainsKey(facilityType))
                     {
-                        UpgradeLevel level = upgradeLevels[i];
-                        level.levelCost *= CostMultiplier;
+                        UpgradeLevel[] upgradeLevels = (UpgradeLevel[])upgradeLevelsFields[0].GetValue(facility);
+                        for (int i = 0; i < upgradeLevels.Length; i++)
+                        {
+                            UpgradeLevel level = upgradeLevels[i];
+                            level.levelCost *= priceMultipliers[facilityType];
+                        }
                     }
                 }
 
@@ -60,76 +82,20 @@ namespace NoMoreGrind
             }
         }
 
-        public void LoadState(ConfigNode configNode)
+        public static Dictionary<Facility, float> ReadConfig(string path)
         {
-            if (configNode.HasValue("CostFactor"))
-            {
-                try
-                {
-                    CostMultiplier = float.Parse(configNode.GetValue("CostFactor"));
-                }
-                catch (Exception)
-                {
-                    CostMultiplier = 0.1f;
-                }   
-            }
-        }
+            Dictionary<Facility, float> priceMultipliers = new Dictionary<Facility, float>();
 
-        public void SaveState(ConfigNode configNode)
-        {
-            if (configNode.HasValue("CostFactor"))
+            var text = File.ReadAllText(path).Split('\n');
+            foreach (var line in text)
             {
-                configNode.SetValue("CostFactor", CostMultiplier.ToString());
-            }
-            else
-            {
-                configNode.AddValue("CostFactor", CostMultiplier.ToString());
-            }
-        }
-
-        void OnGUI()
-        {
-            var oldSkin = GUI.skin;
-            GUI.skin = HighLogic.Skin;
-
-            if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKey(KeyCode.F11))
-            {
-                isVisible = true;
+                var items = line.Split('=');
+                var facility = items[0].Trim();
+                var price = items[1].Trim();
+                priceMultipliers.Add((Facility)Enum.Parse(typeof(Facility), facility), float.Parse(price));
             }
 
-            if (isVisible)
-            {
-                windowRect = GUILayout.Window(0, windowRect, DoWindow, "No More Grind");
-            }
-
-            GUI.skin = oldSkin;
-        }
-
-        public void OnDestroy()
-        {
-        }
-
-        private void DoWindow(int index)
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
-            if (GUILayout.Button("X", GUILayout.Width(16)))
-            {
-                isVisible = false;
-            }
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Cost factor");
-            GUILayout.FlexibleSpace();
-
-            CostMultiplier = GUILayout.HorizontalSlider(CostMultiplier, 0.05f, 2.0f, GUILayout.Width(256));
-
-            GUILayout.Label(CostMultiplier.ToString("0.00"));
-            GUILayout.EndHorizontal();
+            return priceMultipliers;
         }
 
     }
